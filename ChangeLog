@@ -1,0 +1,4 @@
+2009-12-28  Derrell Piper  <ddp@electric-loft.org>
+
+1.0.1	* cluck.el: sorted keyword syntax list since it's going into
+	regexp-opt.  Removed plt-file-mode and more XEmacs stuff.

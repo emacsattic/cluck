@@ -1,6 +1,6 @@
 ;;; cluck.el --- Enhanced support for Chicken Scheming
 
-(defconst cluck-version "1.0.1")
+(defconst cluck-version "1.0.3")
 
 ;; INTRODUCTION:
 ;;
@@ -92,50 +92,61 @@ If non-nil, overrides that variable for URLs viewed by `cluck-browse-url'."
                            :key-type regexp :value-type function))
   :group 'cluck)
 
-(defcustom cluck-manuals                ; TODO: Options menu.
-
+(defcustom cluck-manuals
   '(
-
-    (r5rs "R5RS"
-          "http://www.schemers.org/Documents/Standards/R5RS/HTML/"
-          nil)
-
-    (chicken
+    (r5rs 
+     "R5RS"
+     "http://www.schemers.org/Documents/Standards/R5RS/HTML/"
+     nil)
+;;     "file:///Users/ddp/Documents/Scheme/www.schemers.org/Documents/Standards/R5RS/HTML/index.html")
+    (chicken 
      "Chicken User's Manual"
      "http://chicken.wiki.br/man/4/The%20User's%20Manual"
-     ;;"file:///usr/local/share/chicken/doc/html/The%20User's%20Manual.html"
      nil)
-
-    (htdp       "How to Design Programs"
-                "http://www.htdp.org/"
-                nil)
-    (htus       "How to Use Scheme"
-                "http://www.htus.org/"
-                nil)
-    (t-y-scheme "Teach Yourself Scheme in Fixnum Days"
-                "http://www.ccs.neu.edu/home/dorai/t-y-scheme/t-y-scheme.html"
-                nil)
-    (tspl       "The Scheme Programming Language (Dybvig)"
-                "http://www.scheme.com/tspl4/"
-                nil)
-    (sicp       "Structure and Interpretation of Computer Programs"
-                "http://mitpress.mit.edu/sicp/full-text/book/book-Z-H-1.html"
-                nil)
-    (faq        "Scheme Frequently Asked Questions"
-                "http://community.schemewiki.org/?scheme-faq"
-                nil))
+;;     "file:///usr/local/share/chicken/doc/html/The%20User's%20Manual.html")
+    (faq        
+     "Scheme Frequently Asked Questions"
+     "http://community.schemewiki.org/?scheme-faq"
+     nil)    
+    (htdp
+     "How to Design Programs"
+     "http://www.htdp.org/"
+     nil)
+;;     "file:///Users/ddp/Documents/Scheme/www.htdp.org/2003-09-26/Book/index.html")
+    (htus       
+     "How to Use Scheme"
+     "http://www.htus.org/"
+     nil)
+    (sicp
+     "Structure and Interpretation of Computer Programs"
+     "http://mitpress.mit.edu/sicp/full-text/book/book.html"
+     nil)
+;;     "file:///Users/ddp/Documents/Scheme/mitpress.mit.edu/sicp/full-text/book/book.html")
+    (t-y-scheme 
+     "Teach Yourself Scheme in Fixnum Days"
+     "http://www.ccs.neu.edu/home/dorai/t-y-scheme/t-y-scheme.html"
+     nil)
+;;     "file:///Users/ddp/Documents/Scheme/www.ccs.neu.edu/home/doral/t-y-scheme/t-y-scheme.html")
+    (tspl       
+     "The Scheme Programming Language"
+     "http://www.scheme.com/tspl4/"
+     nil)
+;;     "file:///Users/ddp/Documents/Scheme/www.scheme.com/tspl4/index.html")
+    )
   "*List of specifications of manuals that can be viewed.
 
 Each manual specification is a list of four elements:
 
-    (SYMBOL TITLE LOCATION URL)
+    (SYMBOL TITLE URL LOCAL-URL)
 
 where SYMBOL is a symbol that identifies the manual, TITLE is a
-string, LOCATION is a URL string, and 'nil."
+string, LOCATION is a URL string, and LOCAL-URL is a URL string or 'nil."
   :type  '(repeat (list (symbol :tag "Identifying Symbol")
                         (string :tag "Title String")
                         (string :tag "URL")
-                        (boolean :tag "Use Keywords?")))
+                        (choice :tag "Localized"
+                                (string :tag "Local URL")
+                                (boolean :tag "'nil"))))
   :group 'cluck)
 
 (defcustom cluck-srfi-master-base-url "http://srfi.schemers.org/"
@@ -174,15 +185,6 @@ This only has effect when `cluck-fontify-style' is `plt'."
   :group      'cluck
   :set        'cluck-custom-set
   :initialize 'custom-initialize-default)
-
-;; (defcustom cluck-pltish-fontify-keywords-p t
-;;   "*If non-nil, fontify #: keywords in PLT-style fontification.
-
-;; This only has effect when `cluck-fontify-style' is `plt'."
-;;   :type       'boolean
-;;   :group      'cluck
-;;   :set        'cluck-custom-set
-;;   :initialize 'custom-initialize-default)
 
 (defcustom cluck-pltish-syntax-keywords-to-fontify
   '(
@@ -380,11 +382,6 @@ disabling their ability to set persistent options via the option menu."
   :group 'cluck
   :type  'boolean)
 
-(defcustom cluck-quiet-warnings-p t     ; TODO: Options menu.
-  "Warning messages are quiet and subtle."
-  :group 'cluck
-  :type  'boolean)
-
 (defconst cluck-pltish-comment-face 'cluck-pltish-comment-face)
 (defface  cluck-pltish-comment-face
   '((((class color) (background light)) (:foreground "cyan4"))
@@ -514,34 +511,6 @@ For PLT-style when `cluck-pltish-fontify-syntax-keywords-p' is non-nil."
   "Face used for H3 headings in `;;;' text."
   :group 'cluck)
 
-(defconst cluck-pltfile-prologue-face 'cluck-pltfile-prologue-face)
-(defface  cluck-pltfile-prologue-face
-  '((((class color))     (:foreground "black" :background "gray66"))
-    (((class grayscale)) (:foreground "black" :background "gray66"))
-    (t                   ()))
-  "Face used for the prologue in a decoded PLT package buffer."
-  :group 'cluck)
-
-(defconst cluck-pltfile-dir-face 'cluck-pltfile-dir-face)
-(defface  cluck-pltfile-dir-face
-  '((((class color))     (:bold t :foreground "white" :background "gray33"
-                                :family "Helvetica" :height 1.2 :size "20pt"))
-    (((class grayscale)) (:bold t :foreground "white" :background "gray33"
-                                :family "Helvetica" :height 1.2 :size "20pt"))
-    (t                   (:bold t :inverse-video t)))
-  "Face used for directory headers in a decoded PLT package buffer."
-  :group 'cluck)
-
-(defconst cluck-pltfile-file-face 'cluck-pltfile-file-face)
-(defface  cluck-pltfile-file-face
-  '((((class color))     (:bold t :foreground "black" :background "gray66"
-                                :family "Helvetica" :height 1.2 :size "20pt"))
-    (((class grayscale)) (:bold t :foreground "black" :background "gray66"
-                                :family "Helvetica" :height 1.2 :size "20pt"))
-    (t                   (:bold t :inverse-video t)))
-  "Face used for file headers in a decoded PLT package buffer."
-  :group 'cluck)
-
 (defconst cluck-about-title-face 'cluck-about-title-face)
 (defface  cluck-about-title-face
   '((((class color) (background light))
@@ -567,57 +536,18 @@ For PLT-style when `cluck-pltish-fontify-syntax-keywords-p' is non-nil."
   "Face used for the \"small print\" in About Cluck."
   :group 'cluck)
 
-;; Compatibility/Portability Misc. Kludges:
+;; Compatibility/Portability Misc. Kluges:
 
 ;; Note: Some compatibility gotchas found while porting Cluck that aren't
 ;; addressed by macros and functions:
 ;;
 ;;   * `defface' in Emacs 21 supports ":weight bold", but this is silently
 ;;     ignored under older Emacsen, so ":bold t" must be used instead.
-;;
-;;   * Third argument of `detect-coding-region' is different in Emacs 21 and
-;;     XEmacs 21, so only use the first two args.
-;;
-;;   * Under XEmacs 21, characters are `equal' but not `eq' to their integer
-;;     ASCII values
-;;
-;;   * GNU Emacs 21 faces have `:height' property that is either absolute
-;;     decipoints or relative scaling factor.  XEmacs 21 faces instead have
-;;     `:size' property, which appears to be absolute point or mm size.
-;;
-;;   * XEmacs 21 text properties appear to be front-sticky, and there did not
-;;     seem to be any documentation references to stickiness.
-;;
-;;   * XEmacs 21 `local-variable-p' has second argument mandatory.
-;;
-;;   * XEmacs 21 does not display submenu labels at all unless the submenu has
-;;     content.  For inactive submenus, an empty string suffices for content.
-;;
-;;   * XEmacs 21 doesn't support composite characters (which we use for very
-;;     nice pretty lambda under GNU Emacs).
-
-(eval-and-compile
-  (defvar cluck-xemacs-p (eval '(and (boundp 'running-xemacs) running-xemacs)))
-  (defvar cluck-gnuemacs-p (not cluck-xemacs-p)))
-
-(defmacro cluck-when-xemacs (&rest args)
-  (if cluck-xemacs-p (cons 'progn args) 'nil))
-
-(defmacro cluck-when-gnuemacs (&rest args)
-  (if cluck-gnuemacs-p (cons 'progn args) 'nil))
-
-(defmacro cluck-define-key-after (keymap key definition &optional after)
-  (if cluck-gnuemacs-p
-      `(define-key-after ,keymap ,key ,definition ,after)
-    `(define-key ,keymap ,key (prog1 ,definition ,after))))
 
 (defmacro cluck-delete-horizontal-space (&rest args)
-  (if (and cluck-gnuemacs-p (>= emacs-major-version 21))
+  (if (>= emacs-major-version 21)
       `(delete-horizontal-space ,@args)
     `(delete-horizontal-space)))
-
-(defmacro cluck-match-string-no-properties (&rest args)
-  `(,(if cluck-xemacs-p 'match-string 'match-string-no-properties) ,@args))
 
 (defmacro cluck-menufilter-return (name form)
   (if (= emacs-major-version 20)
@@ -632,17 +562,12 @@ For PLT-style when `cluck-pltish-fontify-syntax-keywords-p' is non-nil."
     form))
 
 (defmacro cluck-propertize (obj &rest props)
-  (if (and cluck-gnuemacs-p (>= emacs-major-version 21))
+  (if (>= emacs-major-version 21)
       `(propertize ,obj ,@props)
     (let ((obj-var 'cluck-propertize-G-obj))
       `(let ((,obj-var ,obj))
          (add-text-properties 0 (length ,obj-var) (list ,@props) ,obj-var)
          ,obj-var))))
-
-(eval-when-compile
-  (when cluck-xemacs-p
-    (defvar inhibit-eol-conversion)
-    (defvar minibuffer-allow-text-properties)))
 
 ;; Compatibility/Portability Hash Table:
 
@@ -676,21 +601,6 @@ For PLT-style when `cluck-pltish-fontify-syntax-keywords-p' is non-nil."
   (let ((pair (funcall (aref table 0) key (aref table 1))))
     (if pair (cdr pair) dflt)))
 
-;; Compatibility/Portability Overlays/Extents:
-
-;; TODO: Maybe get rid of overlays (and the XEmacs extent kludge), and just use
-;;       text properties instead.
-
-(defmacro cluck-make-face-ovlext (beg end face)
-  (if cluck-xemacs-p
-      `(set-extent-property (make-extent ,beg ,end) 'face ,face)
-    `(overlay-put (make-overlay ,beg ,end) 'face ,face)))
-
-(defmacro cluck-make-hiding-ovlext (beg end)
-  (if cluck-xemacs-p
-      `(set-extent-property (make-extent ,beg ,end) 'invisible t)
-    `(overlay-put (make-overlay ,beg ,end) 'category 'cluck-hiding-ovlcat)))
-
 ;; Messages, Errors, Warnings:
 
 (defmacro cluck-activity (what &rest body)
@@ -706,10 +616,7 @@ For PLT-style when `cluck-pltish-fontify-syntax-keywords-p' is non-nil."
     (error "Cluck Internal Error.")))
 
 (defun cluck-warning (format &rest args)
-  (apply 'message (concat "Cluck Warning: " format) args)
-  (unless cluck-quiet-warnings-p
-    (beep)
-    (sleep-for 1)))
+  (apply 'message (concat "Cluck Warning: " format) args))
 
 ;; Regular Expressions:
 
@@ -801,7 +708,7 @@ For PLT-style when `cluck-pltish-fontify-syntax-keywords-p' is non-nil."
         (setq str (substring str 0 (match-beginning 0))))
     str))
 
-;; Kludgey Sexp Buffer Operations:
+;; Klugey Sexp Buffer Operations:
 
 (defconst cluck-backward-sexp-re
   (concat "\\`"
@@ -873,7 +780,7 @@ For PLT-style when `cluck-pltish-fontify-syntax-keywords-p' is non-nil."
                        ;; the beginning of the child sexp (unless it was within
                        ;; the found form name, in which case child sexp start
                        ;; is nil).
-                       (setq found (list (cluck-match-string-no-properties 0)
+                       (setq found (list (match-string-no-properties 0)
                                          (match-end 0)
                                          (or child-start
                                              (if (> orig-point (match-end 0))
@@ -1036,7 +943,7 @@ For PLT-style when `cluck-pltish-fontify-syntax-keywords-p' is non-nil."
       (set-window-buffer window saved-buf)
       (set-buffer saved-buf))))
 
-;; HTML Kludges:
+;; HTML Kluges:
 
 (defun cluck-strip-limited-html-tags (str)
   (save-match-data
@@ -1145,10 +1052,7 @@ See http://www.gnu.org/licenses/ for details.")
      "\n"
      "Mention that you are using "
      (cluck-propertize-bold
-      (copy-sequence
-       (cond (cluck-gnuemacs-p "GNU Emacs")
-             (cluck-xemacs-p   "XEmacs")
-             (t                "*an unrecognized Emacs kind*"))))
+      (copy-sequence "GNU Emacs"))
      " "
      (cluck-propertize-bold
       (format "%d.%d" emacs-major-version emacs-minor-version))
@@ -1318,7 +1222,7 @@ See http://www.gnu.org/licenses/ for details.")
 
              ((match-beginning 2)
               ;; We saw the syntax `NAME (lambda ('.
-              (let ((name (cluck-match-string-no-properties 3)))
+              (let ((name (match-string-no-properties 3)))
                 (when (marker-position last-paren-marker)
                   (goto-char last-paren-marker)
                   (let ((victim-beg (cluck-looking-at-close-paren-backward)))
@@ -1331,7 +1235,7 @@ See http://www.gnu.org/licenses/ for details.")
 
              ((match-beginning 4)
               ;; We saw the syntax `(NAME'.
-              (let ((name (cluck-match-string-no-properties 5)))
+              (let ((name (match-string-no-properties 5)))
                 (when (marker-position last-paren-marker)
                   (goto-char last-paren-marker)
                   (insert ")"))
@@ -1579,11 +1483,7 @@ follows draft,since a final version supercedes a draft version).")
                       (setcar n (cdr (assoc (car n)
                                             '((draft     . "Draft")
                                               (final     . "Final")
-                                              (withdrawn . "Withdrawn")))))
-                      ;; Add dummy content so that XEmacs 21 will display
-                      ;; the submenu label.
-                      (unless (cdr n)
-                        (setcdr n (cons "(None)" nil)))))
+                                              (withdrawn . "Withdrawn")))))))
           menu)
     (setq menu `(["Update SRFI Index" cluck-update-srfi-index]
                  "---"
@@ -1627,10 +1527,10 @@ follows draft,since a final version supercedes a draft version).")
           (alist            '()))
       (goto-char (point-min))
       (while (re-search-forward cluck-parse-srfi-index-buffer-re-1 nil t)
-        (let ((number (string-to-number (cluck-match-string-no-properties 1)))
+        (let ((number (string-to-number (match-string-no-properties 1)))
               (title  (cluck-without-side-whitespace
                        (cluck-strip-limited-html-tags
-                        (cluck-match-string-no-properties 2)))))
+                        (match-string-no-properties 2)))))
           (setq alist (cons
 
                        ;;(cons number
@@ -1658,15 +1558,15 @@ follows draft,since a final version supercedes a draft version).")
   (save-match-data
     (let ((case-fold-search t))
       (cond ((thing-at-point-looking-at cluck-srfi-num-at-point-re-1)
-             (string-to-number (cluck-match-string-no-properties 1)))
+             (string-to-number (match-string-no-properties 1)))
             ((thing-at-point-looking-at "[0-9]+")
-             (string-to-number (cluck-match-string-no-properties 0)))
+             (string-to-number (match-string-no-properties 0)))
             ((thing-at-point-looking-at cluck-srfi-num-at-point-re-2)
-             (string-to-number (cluck-match-string-no-properties 1)))
+             (string-to-number (match-string-no-properties 1)))
             ((let ((str (cluck-line-at-point)))
                (when (string-match cluck-srfi-num-at-point-re-1 str)
                  (string-to-number
-                  (cluck-match-string-no-properties 1 str)))))))))
+                  (match-string-no-properties 1 str)))))))))
 
 (defun cluck-view-srfi (num)
   (interactive (list (cluck-srfi-num-prompt "View SRFI number")))
@@ -1695,159 +1595,35 @@ follows draft,since a final version supercedes a draft version).")
            v)
           (t (error "Invalid SRFI number: %s" input)))))
 
-;; Doc Keyword Value Object:
-
-(defmacro cluck-kw-get-syntax   (o) `(aref ,o 0))
-(defmacro cluck-kw-get-file     (o) `(aref ,o 1))
-(defmacro cluck-kw-get-fragment (o) `(aref ,o 2))
-
-(defmacro cluck-kw-set-syntax   (o v) `(aset ,o 0 ,v))
-(defmacro cluck-kw-set-file     (o v) `(aset ,o 1 ,v))
-(defmacro cluck-kw-set-fragment (o v) `(aset ,o 2 ,v))
-
 ;; Documentation Object:
-
-;; TODO: Rework these document representations once we know the different kinds
-;;       of documents with which we'll be dealing.
 
 (defmacro cluck-doc-get-type         (o) `(aref ,o 0))
 (defmacro cluck-doc-get-sym          (o) `(aref ,o 1))
 (defmacro cluck-doc-get-title        (o) `(aref ,o 2))
-(defmacro cluck-doc-get-loc          (o) `(aref ,o 3))
-(defmacro cluck-doc-get-kw-p         (o) `(aref ,o 4))
-(defmacro cluck-doc-get-start-url    (o) `(aref ,o 5))
-(defmacro cluck-doc-get-kw-base-url  (o) `(aref ,o 6))
-(defmacro cluck-doc-get-kw-file      (o) `(aref ,o 7))
-(defmacro cluck-doc-get-kw-hashtable (o) `(aref ,o 8))
+(defmacro cluck-doc-get-url          (o) `(aref ,o 3))
 
 (defmacro cluck-doc-set-type         (o v) `(aset ,o 0 ,v))
 (defmacro cluck-doc-set-sym          (o v) `(aset ,o 1 ,v))
 (defmacro cluck-doc-set-title        (o v) `(aset ,o 2 ,v))
-(defmacro cluck-doc-set-loc          (o v) `(aset ,o 3 ,v))
-(defmacro cluck-doc-set-kw-p         (o v) `(aset ,o 4 ,v))
-(defmacro cluck-doc-set-start-url    (o v) `(aset ,o 5 ,v))
-(defmacro cluck-doc-set-kw-base-url  (o v) `(aset ,o 6 ,v))
-(defmacro cluck-doc-set-kw-file      (o v) `(aset ,o 7 ,v))
-(defmacro cluck-doc-set-kw-hashtable (o v) `(aset ,o 8 ,v))
+(defmacro cluck-doc-set-url          (o v) `(aset ,o 3 ,v))
 
 (defun cluck-manual-to-doc (manual)
   ;; Accepts a user's manual preference object of the list form:
   ;;
-  ;;     (SYM TITLE LOC KW-P)
+  ;;     (SYM TITLE REMOTE-URL LOCAL-URL)
   ;;
   ;; and creates a manual doc object of the vector form:
   ;;
-  ;;     [manual SYM TITLE LOC KW-P START-URL KW-BASE-URL KW-FILE KW-P
-  ;;      KEYWORDS]
-  ;;
-  ;; KEYWORDS is not populated here -- keywords importing for a manual happens
-  ;; the first time keyword searching is done for the manual."
-  (let ((sym       (nth 0 manual))
-        (title     (nth 1 manual))
-        (loc       (nth 2 manual))
-        (kw-p      (nth 3 manual))
-        (start-url nil)
-        (kw-file   nil)
-        (kw-base   nil))
-    (cond
-     ;; If the location is a string, then handle manual as simple URL.
-     ((stringp loc)
-      (setq start-url loc)
-      (when kw-p
-        (cluck-warning "Cluck can only use keywords for PLT manuals.")
-        (setq kw-p nil)))
-     ;; The location is something other than a string or symbol, so just barf.
-     (t (cluck-internal-error)))
-    ;; We've populated all the variables for the location type, so return the
-    ;; representation.
-    (vector 'manual sym title loc kw-p start-url kw-base kw-file nil)))
-
-(defun cluck-doc-keyword-lookup (doc keyword)
-  (let ((ht (or (cluck-doc-get-kw-hashtable doc)
-                (progn (cluck-doc-import-keywords doc)
-                       (cluck-doc-get-kw-hashtable doc)))))
-    (if ht
-        (cluck-gethash keyword ht nil)
-      (cluck-warning "No keywords for document \"%S\"."
-                     (cluck-doc-get-sym doc))
-      nil)))
-
-(defun cluck-doc-import-keywords (doc)
-  (if (eq (cluck-doc-get-loc doc) 'plt)
-      (cluck-doc-import-plt-manual-keywords doc)
-    (cluck-internal-error)))
-
-(defun cluck-doc-import-plt-manual-keywords (doc)
-  ;; Reads in the predetermined keywords file for PLT manual `doc' object,
-  ;; populating the `kw-hashtable' field of the `doc' object.  The format of
-  ;; each entry in the PLT keywords file is a list of 5 strings:
-  ;;
-  ;;     (KEYWORD SYNTAX FILE FRAGMENT SECTION)
-  ;;
-  ;; The hashtable is keyed on the KEYWORD string, for which the value is
-  ;; usually a vector:
-  ;;
-  ;;     [SYNTAX FILE-CONST FRAGMENT]
-  ;;
-  ;; where FILE-CONST is the FILE string registered with the `cluck-strconst'
-  ;; to save memory on redundant strings.
-  ;;
-  ;; When more there is more than one entry for a given keyword, then the value
-  ;; of the hashtable entry for that keyword is a list of vectors, in the order
-  ;; in which they were derived from the original keywords file.
-  ;;
-  ;; These duplicate values may be duplicated or conflicting, as in:
-  ;;
-  ;;     (["(regexp-match pattern input-port [start-k end-k output-port])"
-  ;;       "mzscheme-Z-H-10.html" "%_kw_definitionregexp-match"]
-  ;;      ["(regexp-match pattern string [start-k end-k output-port])"
-  ;;       "mzscheme-Z-H-10.html" "%_kw_definitionregexp-match"])
-  ;;
-  ;; No attempt is made here to weed out any duplicate/conflicting entries --
-  ;; that behavior left up to the code that accesses the hashtable.  For the
-  ;; example above, a command to display the syntax for the keyword would need
-  ;; to display both values.  However, a command to view the documentation for
-  ;; the keyword would need only to display one Web page without querying the
-  ;; user, since both entries above point to the same page and fragment.
-  (cluck-activity
-   (format "Importing keywords for manual %S" (cluck-doc-get-sym doc))
-   (let (sexp)
-     (garbage-collect)
-     (condition-case err
-         (setq sexp (cluck-read-sexp-file
-                     (or (cluck-doc-get-kw-file doc)
-                         (cluck-warning "Manual %S has no keywords file."
-                                        (cluck-doc-get-sym doc)))))
-       (error (cluck-warning "Problem importing keywords for manual %S: %s"
-                             (cluck-doc-get-sym doc) err)))
-     (when sexp
-       (garbage-collect)
-       (let ((ht (cluck-make-hash-table :test             'equal
-                                        :size             (length sexp)
-                                        :rehash-threshold 1.0)))
-         ;; Note: We make the hashtable equal to the length of the read list of
-         ;; keyword forms so that it will be at least large enough for all the
-         ;; keywords without being excessively overlarge, and without having to
-         ;; do resizes or a counting pass or intermediate representation.  The
-         ;; hashtable will be a little larger than necessary when there are
-         ;; multiple keyword forms for the same keyword.  In a test with
-         ;; MzScheme 200.2, the hashtable used/size for "mzscheme" manual was
-         ;; 489/502; for "mzlib", 245/257.
-         (cluck-doc-set-kw-hashtable doc ht)
-         (mapcar (function
-                  (lambda (raw-entry)
-                    (let* ((kw  (nth 0 raw-entry))
-                           (new (vector (nth 1 raw-entry)
-                                        (cluck-strconst (nth 2 raw-entry))
-                                        (nth 3 raw-entry)))
-                           (old (cluck-gethash kw ht nil)))
-                      (cluck-puthash
-                       kw
-                       (cond ((not     old) new)
-                             ((vectorp old) (list  old new))
-                             ((listp   old) (nconc old (list new))))
-                       ht))))
-                 sexp))))))
+  ;;     [manual SYM TITLE URL]
+  (let ((sym            (nth 0 manual))
+        (title          (nth 1 manual))
+        (remote-url     (nth 2 manual))
+        (local-url      (nth 3 manual))
+        (url            nil))
+    (if local-url
+        (setq url local-url)
+        (setq url remote-url))
+    (vector 'manual sym title url)))
 
 (defun cluck-read-sexp-file (filename)
   (save-excursion
@@ -1903,7 +1679,7 @@ follows draft,since a final version supercedes a draft version).")
                (error "No manual %S." input))))))
   (cluck-activity
    (format "Viewing manual \"%S\"" sym)
-   (cluck-browse-url (or (cluck-doc-get-start-url
+   (cluck-browse-url (or (cluck-doc-get-url
                           (or (cluck-docs-manual-lookup sym)
                               (error "Manual \"%S\" not found." sym)))
                          (error "Don't know a URL for manual \"%S\"." sym)))))
@@ -1976,14 +1752,11 @@ Can be used in your `~/.emacs' file something like this:
                   (cluck-manuals-webjump-sites)
                   webjump-plus-sites
                   webjump-sample-sites))"
-  ;; TODO: Note what they should do if they are adding to plt collectsion dirs
-  ;;       via custom settings but cluck-manuals-webjump-sites is getting
-  ;;       called before then.
-  (let ((result                 '())
-        (cluck-quiet-warnings-p t))
+
+  (let ((result '()))
     (mapc (function
            (lambda (doc)
-             (let ((url (cluck-doc-get-start-url doc)))
+             (let ((url (cluck-doc-get-url doc)))
                (when url
                  (setq result (cons (cons (cluck-doc-get-title doc) url)
                                     result))))))
@@ -2182,12 +1955,12 @@ Can be used in your `~/.emacs' file something like this:
 ;; Syntax Table:
 
 (defmacro cluck-str-syntax (str)
-  `(,(if (and cluck-gnuemacs-p (>= emacs-major-version 21))
+  `(,(if (>= emacs-major-version 21)
          'string-to-syntax
-       'cluck-kludged-string-to-syntax)
+       'cluck-kluged-string-to-syntax)
     ,str))
 
-(defun cluck-kludged-string-to-syntax (str)
+(defun cluck-kluged-string-to-syntax (str)
   (let* ((str-len (length str))
          (code    (aref str 0))
          (matches (if (> str-len 1) (aref str 1)))
@@ -2213,9 +1986,9 @@ Can be used in your `~/.emacs' file something like this:
 ;;       block comments as nestable rather than as unnestable, regardless of
 ;;       whether or not a user's target Scheme dialect supports nested.
 
-(defconst cluck-pound-syntax-string (if cluck-gnuemacs-p "_ p14bn" "_ p14b"))
-;; (defconst cluck-bar-syntax-string   (if cluck-gnuemacs-p "  23bn"  "  23b"))
-(defconst cluck-bar-syntax-string   (if cluck-gnuemacs-p "_ 23bn"  "_ 23b"))
+(defconst cluck-pound-syntax-string "_ p14bn")
+;; (defconst cluck-bar-syntax-string   "  23bn")
+(defconst cluck-bar-syntax-string "_ 23bn")
 
 (defconst cluck-pound-syntax (cluck-str-syntax cluck-pound-syntax-string))
 (defconst cluck-bar-syntax   (cluck-str-syntax cluck-bar-syntax-string))
@@ -2323,9 +2096,6 @@ Can be used in your `~/.emacs' file something like this:
      ,(cluck-bool-menuitem "Fontify Syntax Keywords"
                            cluck-pltish-fontify-syntax-keywords-p
                            :active (eq cluck-fontify-style 'plt))
-     ;; ,(cluck-bool-menuitem "Fontify #: Keywords"
-     ;;                       cluck-pltish-fontify-keywords-p
-     ;;                       :active (eq cluck-fontify-style 'plt))
      ,(cluck-bool-menuitem "Fontify 3+ Semicolon Comments"
                            cluck-fontify-threesemi-p
                            :active (memq cluck-fontify-style '(plt)))
@@ -2352,30 +2122,14 @@ Can be used in your `~/.emacs' file something like this:
 
 (defun cluck-install-global-menu ()
   (when cluck-global-menu-p
-    (cluck-when-gnuemacs
-     (unless (assq 'Cluck menu-bar-final-items)
-       (setq menu-bar-final-items (cons 'Cluck menu-bar-final-items)))
-     (easy-menu-define cluck-global-menu global-map ""
-       cluck-global-menuspec))
-    (cluck-when-xemacs
-     ;; Die! Die! Die!
-     ;;(mapcar (function (lambda (n)
-     ;;(delete-menu-item '("Cluck") n)
-     ;;(add-submenu nil cluck-global-menuspec "Help" n)))
-     ;;(list 
-     ;;;;current-menubar 
-     ;;default-menubar
-     ;;))
-     (delete-menu-item '("Cluck") current-menubar)
-     (add-submenu nil cluck-global-menuspec "Help" current-menubar)
-     (set-menubar-dirty-flag))))
+    (unless (assq 'Cluck menu-bar-final-items)
+      (setq menu-bar-final-items (cons 'Cluck menu-bar-final-items)))
+    (easy-menu-define cluck-global-menu global-map ""
+                      cluck-global-menuspec)))
 
 ;; TODO: We should make sure the user's custom settings have been loaded
 ;; before we do this.
 (cluck-install-global-menu)
-
-;; And die some more!
-;;(cluck-when-xemacs (add-hook 'after-init-hook 'cluck-install-global-menu))
 
 (defconst cluck-scheme-mode-menuspec
   `("Scheme"
@@ -2393,15 +2147,14 @@ Can be used in your `~/.emacs' file something like this:
     ["Compile Scheme File"           scheme-compile-file]))
 
 (defvar cluck-scheme-mode-menu)
-(cluck-when-gnuemacs
- (let ((map (make-sparse-keymap)))
-   (setq cluck-scheme-mode-menu nil)
-   (easy-menu-define cluck-scheme-mode-menu map ""
-     cluck-scheme-mode-menuspec)
-   (define-key scheme-mode-map [menu-bar scheme]
-     (cons "Scheme"
-           (or (lookup-key map [menu-bar Scheme])
-               (lookup-key map [menu-bar scheme]))))))
+(let ((map (make-sparse-keymap)))
+  (setq cluck-scheme-mode-menu nil)
+  (easy-menu-define cluck-scheme-mode-menu map ""
+                    cluck-scheme-mode-menuspec)
+  (define-key scheme-mode-map [menu-bar scheme]
+    (cons "Scheme"
+          (or (lookup-key map [menu-bar Scheme])
+              (lookup-key map [menu-bar scheme])))))
 
 (defun cluck-view-manual-menufilter (arg)
   (cluck-menufilter-return "cluck-view-manual-menufilter-menu"
@@ -2532,7 +2285,7 @@ Can be used in your `~/.emacs' file something like this:
 (defconst cluck-lambda-char (make-char 'greek-iso8859-7 107))
 
 (defconst cluck-pretty-lambda-supported-p
-  (and cluck-gnuemacs-p (>= emacs-major-version 21)))
+  (>= emacs-major-version 21))
 
 ;; Font Lock:
 
@@ -2619,7 +2372,7 @@ Can be used in your `~/.emacs' file something like this:
 
   ;; TODO: Would be nice to fontify binding names everywhere they are
   ;;       introduced, such as in `let' and `lambda' forms.  That may require
-  ;;       real parsing to do reasonably well -- the kludges get too bad and
+  ;;       real parsing to do reasonably well -- the kluges get too bad and
   ;;       slow, and font-lock gets in the way more than it helps.
 
   `(
@@ -2636,7 +2389,7 @@ Can be used in your `~/.emacs' file something like this:
               "\\>"
               "[ \t]*[[(]?"
               "\\(\\sw+\\)")
-     (2 (let ((name (cluck-match-string-no-properties 2)))
+     (2 (let ((name (match-string-no-properties 2)))
           (if (= (aref name (1- (length name))) ?%)
               cluck-pltish-class-defn-face
             cluck-pltish-defn-face))
@@ -2791,19 +2544,7 @@ Can be used in your `~/.emacs' file something like this:
                         (font-lock-syntactic-keywords  . ,sk))
                     '()))))
 
-    ;; TODO: Figure out why `font-lock-syntactic-keywords' just doesn't work in
-    ;;       XEmacs 21, even though the syntax text properties seem to get set.
-    ;;       We have already beaten it like an egg-sucking dog.
-
-    ;;(if cluck-xemacs-p
-    ;;(put 'scheme-mode 'font-lock-defaults fld)
-    (set (make-local-variable 'font-lock-defaults) fld)
-    ;;)
-
-    ;;(when cluck-xemacs-p
-    ;;  (set (make-local-variable 'font-lock-syntactic-keywords)
-    ;;       syntactic-keywords))
-    ))
+    (set (make-local-variable 'font-lock-defaults) fld)))
 
 ;; Scheme Mode Startup Hook:
 
@@ -2818,15 +2559,6 @@ Can be used in your `~/.emacs' file something like this:
 
   ;; Install the Cluck keymap and menu items.
   (local-set-key cluck-scheme-mode-keymap-prefix cluck-scheme-mode-keymap)
-  (cluck-when-xemacs
-   (when (featurep 'menubar)
-     ;;(set-buffer-menubar current-menubar)
-     ;; TODO: For XEmacs, we could have two versions of this menu -- the popup
-     ;;       one would have the Global submenu, but the menubar one would have
-     ;;       the Global submenu only if cluck-global-menu-p were nil.
-     (add-submenu nil cluck-scheme-mode-menuspec)
-     (set-menubar-dirty-flag)
-     (setq mode-popup-menu cluck-scheme-mode-menuspec)))
 
   ;; Bind the paren-matching keys.
   (local-set-key ")" 'cluck-insert-closing-paren)
@@ -2852,11 +2584,7 @@ Can be used in your `~/.emacs' file something like this:
                (not (featurep 'noweb-mode)))
       ;; This warning is not given if the `noweb-mode' package is installed.
       (cluck-warning "`font-lock-keywords' already set when hook ran."))
-    (cluck-install-fontification))
-
-  ;; Die! Die! Die!
-  (cluck-when-xemacs
-   (cluck-install-global-menu)))
+    (cluck-install-fontification)))
 
 (defun cluck-inferior-scheme-mode-hookfunc ()
   (cluck-shared-mode-hookfunc-stuff))
@@ -2865,13 +2593,7 @@ Can be used in your `~/.emacs' file something like this:
   (cluck-shared-mode-hookfunc-stuff)
 
   ;; Bind Return/Enter key.
-  (local-set-key "\r" 'cluck-newline)
-
-  ;; Install toolbar.
-  ;;(unless cluck-xemacs-p
-  ;;(when (display-graphic-p)
-  ;;(cluck-install-tool-bar)))
-  )
+  (local-set-key "\r" 'cluck-newline))
 
 (add-hook 'scheme-mode-hook          'cluck-scheme-mode-hookfunc)
 (add-hook 'inferior-scheme-mode-hook 'cluck-inferior-scheme-mode-hookfunc)
@@ -2883,9 +2605,7 @@ Can be used in your `~/.emacs' file something like this:
 (defvar cluck-saved-compilation-error-regexp-alist nil)
 
 (defconst cluck-compilation-error-regexp-alist-additions
-  (let ((no-line (if cluck-xemacs-p
-                     (let ((m (make-marker))) (set-marker m 0) m)
-                   'cluck-compile-no-line-number)))
+  (let ((no-line 'cluck-compile-no-line-number))
     `(
 
       ;; PLT MzScheme 4.1.4 "=== context ===" traceback when there is only file,
